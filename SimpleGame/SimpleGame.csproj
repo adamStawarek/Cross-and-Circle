@@ -142,9 +142,5 @@
     <Resource Include="Images\Circle.png" />
     <Resource Include="Images\Cross.png" />
   </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\multi.png" />
-    <Resource Include="Images\single.png" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
