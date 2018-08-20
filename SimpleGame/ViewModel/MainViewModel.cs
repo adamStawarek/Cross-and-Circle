@@ -24,15 +24,7 @@ namespace SimpleGame.ViewModel
 
         public MainViewModel()
         {
-            CurrentViewModel=new StartupWindowViewModel();
-            ////if (IsInDesignMode)
-            ////{
-            ////    // Code runs in Blend --> create design time data.
-            ////}
-            ////else
-            ////{
-            ////    // Code runs "for real"
-            ////}
+            CurrentViewModel=new OnlineGameSettingsViewModel();        
         }
     }
 }

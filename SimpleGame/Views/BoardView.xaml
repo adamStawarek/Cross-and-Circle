@@ -5,10 +5,15 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="800"
-             DataContext="{StaticResource BoardViewModel}"
-             x:Name="Window">
-    <Grid>
+             d:DesignHeight="600" d:DesignWidth="800"           
+             x:Name="Window"
+             >
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding LoadCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    <Grid IsEnabled="{Binding IsPlayerTurn}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="3*"></ColumnDefinition>
             <ColumnDefinition Width="*"></ColumnDefinition>
@@ -22,7 +27,7 @@
                        Command="{Binding NewGame}"></Button>
            </DockPanel>
         </Grid>
-        <Grid Grid.Column="0" Margin="10" Background="AliceBlue">
+        <Grid IsEnabled="{Binding IsPlayerTurn}"  Grid.Column="0" Margin="10" Background="AliceBlue">
             <ItemsControl ItemsSource="{Binding Symbols}">
                
                 <ItemsControl.ItemTemplate>

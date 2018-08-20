@@ -5,7 +5,6 @@
         <ResourceDictionary>
             <viewModels:OnlineGameSettingsViewModel x:Key="GameSettingsViewModel"/>
             <viewModels:BoardViewModel x:Key="BoardViewModel"/>
-            <viewModels:StartupWindowViewModel x:Key="StartupWindowViewModel"/>
             <vm:ViewModelLocator x:Key="Locator" d:IsDataSource="True" xmlns:vm="clr-namespace:SimpleGame.ViewModel" />
         </ResourceDictionary>
     </Application.Resources>

@@ -14,9 +14,6 @@
             <DataTemplate DataType="{x:Type viewModels:BoardViewModel}">
                 <views:BoardView DataContext="{Binding}"></views:BoardView>
             </DataTemplate>
-            <DataTemplate DataType="{x:Type viewModels:StartupWindowViewModel}">
-                <views:StarupWindow DataContext="{Binding}"></views:StarupWindow>
-            </DataTemplate>
             <DataTemplate DataType="{x:Type viewModels:OnlineGameSettingsViewModel}">
                 <views:OnlineGameSettings DataContext="{Binding}"></views:OnlineGameSettings>
             </DataTemplate>

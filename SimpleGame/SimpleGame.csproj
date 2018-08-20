@@ -81,12 +81,8 @@
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="SecondPlayer.cs" />
     <Compile Include="ViewModels\OnlineGameSettingsViewModel.cs" />
-    <Compile Include="ViewModels\StartupWindowViewModel.cs" />
     <Compile Include="Views\OnlineGameSettings.xaml.cs">
       <DependentUpon>OnlineGameSettings.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\StarupWindow.xaml.cs">
-      <DependentUpon>StarupWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
@@ -111,10 +107,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Views\OnlineGameSettings.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\StarupWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
