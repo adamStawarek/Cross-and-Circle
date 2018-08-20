@@ -10,20 +10,12 @@ namespace SimpleGame
 {
     public abstract class Player
     {
-        public static Players CurrentPlayer;
         public static bool IsGameOver;
         static Player()
         {
-            var rnd=new Random();
-            IsGameOver = false;
-            CurrentPlayer = (Players)rnd.Next(2);
+            IsGameOver = false;         
         }
 
-        public static void RandomizeCurrentPlayer()
-        {
-            var rnd = new Random();
-            CurrentPlayer = (Players)rnd.Next(2);
-        }
 
         public Players PlayerType { get; set; }
         public ImageSource SymbolSource { get; set; }
@@ -48,6 +40,11 @@ namespace SimpleGame
             TakenFields.CollectionChanged += CheckGameStatus;
         }
 
+        public void EmptyFields()
+        {
+            TakenFields.Clear();
+        }
+
         private void CheckGameStatus(object sender, NotifyCollectionChangedEventArgs e)
         {
             foreach (var sequence in _winSequenceMatrix)
@@ -63,9 +60,7 @@ namespace SimpleGame
 
         public void MakeTurn(int number)
         {
-            if (CurrentPlayer != PlayerType) return;
             TakenFields.Add(number);
-            CurrentPlayer = (PlayerType == Players.Player1) ? Players.Player2 : Players.Player1;
         }            
     }
 }

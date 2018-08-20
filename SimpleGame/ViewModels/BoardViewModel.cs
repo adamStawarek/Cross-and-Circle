@@ -86,14 +86,20 @@ namespace SimpleGame.ViewModels
         }
 
         private void Client_DataReceived(object sender, Message e)
-        {
-            
+        {            
             var msg = e.MessageString.Split(';');
             if (msg.Length == 1)
             {
-                Application.Current.Dispatcher.BeginInvoke(msg[0] == "Player1"
-                    ? AssignPlayer1
-                    : new Action(AssignPlayer2));
+                if (msg[0] == "NewGame")
+                {
+                    Application.Current.Dispatcher.BeginInvoke(new Action(ReallyStartNewGame));
+                }
+                else
+                {
+                    Application.Current.Dispatcher.BeginInvoke(msg[0] == "Player1"
+                        ? AssignPlayer1
+                        : new Action(AssignPlayer2));
+                }              
             }               
             else 
             {
@@ -120,9 +126,8 @@ namespace SimpleGame.ViewModels
 
         private void EnemyTurn(int index)
         {
-            IsPlayerTurn = true;
-            if (_assignedFields.Contains(index) || Player.IsGameOver) return;
-
+            
+            if (!Player.IsGameOver && _assignedFields.Contains(index) || Player.IsGameOver) return;          
             _assignedFields.Add(index);
             Symbols[index].Value = _enemyPlayer.SymbolSource;
             _enemyPlayer.MakeTurn(index);
@@ -131,24 +136,27 @@ namespace SimpleGame.ViewModels
             {
                 MessageBox.Show("It's a draw!!!");
                 Player.IsGameOver = true;
+             
             }
-
-            
+            IsPlayerTurn = true;
         }
 
         private void StartNewGame()
+        {        
+            _client.Write("NewGame");
+        }
+
+        private void ReallyStartNewGame()
         {
-            //_assignedFields.Clear();
+            _assignedFields.Clear();
 
-            //for (int i = 0; i < 9; i++)
-            //    Symbols[i].Value=new BitmapImage();
+            for (int i = 0; i < 9; i++)
+                Symbols[i].Value = new BitmapImage();
 
-            //Player.IsGameOver = false;
-            //Player.RandomizeCurrentPlayer();
-
-            //_player1=new FirstPlayer(Players.Player1);
-            //_player2=new SecondPlayer(Players.Player2);
-            //CurrentPlayer = (Player.CurrentPlayer == Players.Player1) ? _player1 : _player2;
+            Player.IsGameOver = false;
+            CurrentPlayer.EmptyFields();
+            _enemyPlayer.EmptyFields();
+            IsPlayerTurn = CurrentPlayer.PlayerType == Players.Player1;
         }
 
         private void PlayerTurn(object p)
@@ -160,15 +168,13 @@ namespace SimpleGame.ViewModels
             Symbols[index].Value = CurrentPlayer.SymbolSource;
             CurrentPlayer.MakeTurn(index);
 
-            if (_assignedFields.Count == 9)
+            IsPlayerTurn = false;
+            if (!Player.IsGameOver&&_assignedFields.Count == 9)
             {
                 MessageBox.Show("It's a draw!!!");
                 Player.IsGameOver = true;
-            }
-
-            IsPlayerTurn = false;
+            }          
             _client.Write(_enemyPlayer.PlayerType+";"+index);
-           
         }
     }
 }

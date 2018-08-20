@@ -8,7 +8,7 @@
              DataContext="{StaticResource GameSettingsViewModel}">
     <Grid Background="#ECDFCE">
         <StackPanel Background="AntiqueWhite" Width="300" 
-                    Height="370" HorizontalAlignment="Center" 
+                    Height="400" HorizontalAlignment="Center" 
                     VerticalAlignment="Center"
                     >
             <StackPanel Margin="0,40,0,20" Orientation="Horizontal" HorizontalAlignment="Center">
@@ -22,6 +22,7 @@
             <Button Content="Connect" Command="{Binding StartGameCommand}" FontSize="30" Margin="0,40,0,0" Width="150"></Button>
             <Label Content="...or" FontSize="24" HorizontalAlignment="Center"></Label>
             <Button Content="Run  a server" Command="{Binding RunServerCommand}" FontSize="30" Margin="0,10,0,0" Width="200"></Button>
+            <Label Content="{Binding ConnectionMessage}" FontSize="18" HorizontalAlignment="Center"></Label>
         </StackPanel>
     </Grid>
 </UserControl>
