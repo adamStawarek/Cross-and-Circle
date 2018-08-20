@@ -1,0 +1,25 @@
+﻿<UserControl x:Class="SimpleGame.Views.OnlineGameSettings"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="800"
+             DataContext="{StaticResource GameSettingsViewModel}">
+    <Grid Background="#ECDFCE">
+        <StackPanel Background="AntiqueWhite" Width="300" 
+                    Height="300" HorizontalAlignment="Center" 
+                    VerticalAlignment="Center"
+                    >
+            <StackPanel Margin="0,40,0,20" Orientation="Horizontal" HorizontalAlignment="Center">
+                <Label Margin="0,0,20,0" Content="Host:" FontSize="30" FontWeight="Bold"/>
+                <TextBox Width="150" Text="{Binding Host}" FontSize="24"></TextBox>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Label Margin="0,0,20,0" Content="Port:" FontSize="30" FontWeight="Bold"/>
+                <TextBox Width="150" Text="{Binding Port}" FontSize="24"></TextBox>
+            </StackPanel>
+            <Button Content="Connect" Command="{Binding StartGameCommand}" FontSize="30" Margin="0,40,0,0" Width="150"></Button>
+        </StackPanel>
+    </Grid>
+</UserControl>

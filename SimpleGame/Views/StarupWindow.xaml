@@ -16,14 +16,14 @@
          <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
             <Button Command="{Binding SingleGameCommand}">
                 <StackPanel Orientation="Horizontal">
-                    <Image Source="Images/single.png"  Width="50"/>
+                    <Image Source="../Images/single.png" Width="50"/>
                     <TextBlock FontSize="30" Padding="15" FontWeight="Bold" 
                                Text="Single player"/>
                 </StackPanel>
             </Button>
             <Button Command="{Binding MultiGameCommand}">
                 <StackPanel Orientation="Horizontal">
-                    <Image Source="Images/multi.png"  Width="50"/>
+                    <Image Source="../Images/multi.png"  Width="50"/>
                     <TextBlock FontSize="30" Padding="15" FontWeight="Bold" 
                                 Text="Multi player"/>
                 </StackPanel>

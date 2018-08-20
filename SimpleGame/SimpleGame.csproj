@@ -46,6 +46,9 @@
     <Reference Include="GalaSoft.MvvmLight.Platform, Version=5.4.1.0, Culture=neutral, PublicKeyToken=5f873c45e98af8a1, processorArchitecture=MSIL">
       <HintPath>..\packages\MvvmLightLibs.5.4.1\lib\net45\GalaSoft.MvvmLight.Platform.dll</HintPath>
     </Reference>
+    <Reference Include="SimpleTCP, Version=1.0.24.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleTCP.1.0.24\lib\net45\SimpleTCP.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -73,13 +76,15 @@
     <Compile Include="Helpers\ObservablePairCollection.cs" />
     <Compile Include="Helpers\Pair.cs" />
     <Compile Include="Helpers\ListExtensions.cs" />
-    <Compile Include="Networking\TcpClient.cs" />
-    <Compile Include="Networking\TcpServer.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Players.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="SecondPlayer.cs" />
+    <Compile Include="ViewModels\OnlineGameSettingsViewModel.cs" />
     <Compile Include="ViewModels\StartupWindowViewModel.cs" />
+    <Compile Include="Views\OnlineGameSettings.xaml.cs">
+      <DependentUpon>OnlineGameSettings.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\StarupWindow.xaml.cs">
       <DependentUpon>StarupWindow.xaml</DependentUpon>
     </Compile>
@@ -105,6 +110,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Views\OnlineGameSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\StarupWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

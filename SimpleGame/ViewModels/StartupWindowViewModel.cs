@@ -18,7 +18,7 @@ namespace SimpleGame.ViewModels
         private void StartMultiPlayerGame()
         {
             ViewModelLocator vm=new ViewModelLocator();
-            vm.Main.CurrentViewModel=new BoardViewModel();
+            vm.Main.CurrentViewModel=new OnlineGameSettingsViewModel();
             vm.Main.RaisePropertyChanged("CurrentViewModel");
         }
 

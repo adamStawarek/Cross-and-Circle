@@ -17,6 +17,9 @@
             <DataTemplate DataType="{x:Type viewModels:StartupWindowViewModel}">
                 <views:StarupWindow DataContext="{Binding}"></views:StarupWindow>
             </DataTemplate>
+            <DataTemplate DataType="{x:Type viewModels:OnlineGameSettingsViewModel}">
+                <views:OnlineGameSettings DataContext="{Binding}"></views:OnlineGameSettings>
+            </DataTemplate>
         </Grid.Resources>
         <ContentControl Content="{Binding CurrentViewModel,UpdateSourceTrigger=PropertyChanged}"></ContentControl>
         
