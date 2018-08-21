@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:helpers="clr-namespace:SimpleGame.Helpers"
+             xmlns:gif="clr-namespace:WpfAnimatedGif;assembly=WpfAnimatedGif"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="800"           
              x:Name="Window"
@@ -17,7 +18,8 @@
             <i:InvokeCommandAction Command="{Binding LoadCommand}" />
         </i:EventTrigger>
     </i:Interaction.Triggers>
-    <Grid IsEnabled="{Binding IsPopupOpen,Converter={StaticResource InverseBoolConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+    <Grid>
+       
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="3*"></ColumnDefinition>
             <ColumnDefinition Width="*"></ColumnDefinition>
@@ -29,10 +31,23 @@
                VerticalOffset="-50">
             <Grid Background="#EF6535" Margin="15">
                 <StackPanel  Margin="15">
-                    <Label Content="Cannot connect to server!!!" FontWeight="Bold" FontSize="20"
+                    <Label Content="{Binding WarningPopupMessage}" FontWeight="Bold" FontSize="20"
                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     <Button Padding="10" Command="{Binding BackToSettings}" Content="Back to settings"
                          FontSize="18" Width="150" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Popup>
+        <Popup IsOpen="{Binding IsWaitingPopupOpen}" 
+            Placement="Mouse"
+            PopupAnimation="Slide" 
+            HorizontalOffset="100"
+            VerticalOffset="-200">
+            <Grid Background="#ECBAA8" Margin="15">
+                <StackPanel  Margin="15">
+                    <Label Content="Waiting for second player to join..." FontWeight="Bold" FontSize="20"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Image Width="200" gif:ImageBehavior.AnimatedSource="../Images/waiting.gif" ></Image>
                 </StackPanel>
             </Grid>
         </Popup>

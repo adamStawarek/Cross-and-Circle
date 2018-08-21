@@ -4,6 +4,7 @@ using SimpleGame.ViewModel;
 using SimpleTCP;
 using System;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 
 namespace SimpleGame.ViewModels
@@ -78,6 +79,8 @@ namespace SimpleGame.ViewModels
             try
             {
                 _server.DataReceived += Server_DataReceived;
+                _server.ClientConnected += BroadcastThatAllClientsReady;
+                _server.ClientDisconnected += BroadcastThatOneClientLeftTheGame;
                 IPAddress ip = IPAddress.Parse(Host);
                 _server.Start(ip, Convert.ToInt32(Port));
                 ConnectionMessage = "Server running...";
@@ -86,9 +89,18 @@ namespace SimpleGame.ViewModels
             {
 
                 ConnectionMessage = "Cannot start server";
-            }         
-                
-                     
+            }                                             
+        }
+
+        private void BroadcastThatOneClientLeftTheGame(object sender, TcpClient e)
+        {
+            _server.Broadcast("Client_disconnected");
+        }
+
+        private void BroadcastThatAllClientsReady(object sender, TcpClient e)
+        {
+            if(_server.ConnectedClientsCount==2)
+                _server.Broadcast("Ready");
         }
 
         private void Server_DataReceived(object sender, Message e)

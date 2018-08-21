@@ -13,11 +13,11 @@ namespace SimpleGame.ViewModels
 {
     public class BoardViewModel:ViewModelBase
     {
+        private  SimpleTcpClient _client;
         private readonly string _host;
         private readonly string _port;
-        public ObservablePairCollection<int,ImageSource> Symbols { get; set; }
-       
-        private  SimpleTcpClient _client;
+
+        public ObservablePairCollection<int,ImageSource> Symbols { get; set; }              
 
         public RelayCommand<object> MoveCommand { get; }
         public RelayCommand NewGame { get; }
@@ -50,6 +50,7 @@ namespace SimpleGame.ViewModels
                 if (Equals(_isPlayerTurn, value))
                     return;
                 _isPlayerTurn = value;
+
                 RaisePropertyChanged();
             }
         }
@@ -62,7 +63,34 @@ namespace SimpleGame.ViewModels
             {
                 if (Equals(_isPopupOpen, value))
                     return;
-                _isPopupOpen = value;
+                _isPopupOpen = value;                
+                RaisePropertyChanged();
+            }
+        }
+        
+        private bool _isWaitingPopupOpen;
+        public bool IsWaitingPopupOpen
+        {
+            get => _isWaitingPopupOpen;
+            set
+            {
+                if (Equals(_isWaitingPopupOpen, value))
+                    return;
+                _isWaitingPopupOpen = value;
+                RaisePropertyChanged();
+            }
+        }
+
+
+        private string _warningPopupMessage;
+        public string WarningPopupMessage
+        {
+            get => _warningPopupMessage;
+            set
+            {
+                if (Equals(_warningPopupMessage, value))
+                    return;
+                _warningPopupMessage = value;
                 RaisePropertyChanged();
             }
         }
@@ -73,18 +101,24 @@ namespace SimpleGame.ViewModels
             _port = port;
             IsPlayerTurn = false;
             IsPopupOpen = false;
+            IsWaitingPopupOpen = false;
 
             Symbols=new ObservablePairCollection<int, ImageSource>();
             for(var i=0;i<9;i++)
                 Symbols.Add(i,new BitmapImage());
 
             MoveCommand = new RelayCommand<object>(PlayerTurn);
-            NewGame=new RelayCommand(StartNewGame);
+            NewGame=new RelayCommand(InformServerToStartNewGame);
             LoadCommand =new RelayCommand(Loaded);   
             BackToSettings=new RelayCommand(OpenSettingsWindow);
+            Application.Current.Exit += DisconnectClient;
         }
 
-        
+        private void DisconnectClient(object sender, ExitEventArgs e)
+        {
+            _client.Disconnect();
+        }
+
         public BoardViewModel()
         {
             
@@ -101,6 +135,7 @@ namespace SimpleGame.ViewModels
             }
             catch (Exception)
             {
+                WarningPopupMessage = "Cannot connect to given host and port!!!";
                 IsPopupOpen = true;
             }
         }
@@ -111,7 +146,13 @@ namespace SimpleGame.ViewModels
             switch (msg.Length)
             {
                 case 1 when msg[0] == "NewGame":
-                    Application.Current.Dispatcher.BeginInvoke(new Action(ReallyStartNewGame));
+                    Application.Current.Dispatcher.BeginInvoke(new Action(StartNewGame));
+                    break;
+                case 1 when msg[0] == "Ready":
+                    Application.Current.Dispatcher.BeginInvoke(new Action(ReadyToPlay));
+                    break;
+                case 1 when msg[0] == "Client_disconnected":
+                    Application.Current.Dispatcher.BeginInvoke(new Action(ClientDisconnected));
                     break;
                 case 1:
                     Application.Current.Dispatcher.BeginInvoke(msg[0] == "Player1"
@@ -128,12 +169,26 @@ namespace SimpleGame.ViewModels
             }
         }
 
+        private void ClientDisconnected()
+        {
+            WarningPopupMessage = "The second player has left the game";
+            IsPopupOpen = true;
+        }
+
+        private void ReadyToPlay()
+        {            
+            if (CurrentPlayer.PlayerType == Players.Player1)
+            {
+                IsPlayerTurn = true;
+                IsWaitingPopupOpen = false;
+            }                            
+        }
+
         private void OpenSettingsWindow()
         {
             var vm=new ViewModelLocator();
             vm.Main.CurrentViewModel = OnlineGameSettingsViewModel.GetInstance();
         }
-
 
         private void AssignPlayer(Players player)
         {
@@ -141,7 +196,7 @@ namespace SimpleGame.ViewModels
             {
                 CurrentPlayer = new FirstPlayer(Players.Player1);
                 _enemyPlayer = new SecondPlayer(Players.Player2);
-                IsPlayerTurn = true;              
+                IsWaitingPopupOpen = true;
             }
             else
             {
@@ -151,7 +206,7 @@ namespace SimpleGame.ViewModels
 
             _enemyPlayer.Win += EnemyWin;
             _currentPlayer.Win += PlayerWin;
-            Player.Draw += MatchEndedInDraw;
+            Player.Draw += MatchEndedInDraw;            
         }
 
         private void MatchEndedInDraw(object sender, EventArgs e)
@@ -169,13 +224,12 @@ namespace SimpleGame.ViewModels
             MessageBox.Show("You lose");
         }
 
-
-        private void StartNewGame()
+        private void InformServerToStartNewGame()
         {        
             _client.Write("NewGame");
         }
 
-        private void ReallyStartNewGame()
+        private void StartNewGame()
         {           
             for (var i = 0; i < 9; i++)
                 Symbols[i].Value = new BitmapImage();
