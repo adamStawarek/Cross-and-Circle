@@ -24,7 +24,7 @@ namespace SimpleGame.ViewModel
 
         public MainViewModel()
         {
-            CurrentViewModel=new OnlineGameSettingsViewModel();        
+            CurrentViewModel=OnlineGameSettingsViewModel.GetInstance();        
         }
     }
 }

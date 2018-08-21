@@ -3,11 +3,11 @@ using GalaSoft.MvvmLight.Command;
 using SimpleGame.Helpers;
 using SimpleTCP;
 using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using SimpleGame.ViewModel;
 
 namespace SimpleGame.ViewModels
 {
@@ -18,11 +18,11 @@ namespace SimpleGame.ViewModels
         public ObservablePairCollection<int,ImageSource> Symbols { get; set; }
        
         private  SimpleTcpClient _client;
-        private readonly List<int> _assignedFields;
 
         public RelayCommand<object> MoveCommand { get; }
         public RelayCommand NewGame { get; }
         public RelayCommand LoadCommand { get; }
+        public RelayCommand BackToSettings { get; set; }
 
         private Player _enemyPlayer;
         private Player _currentPlayer;
@@ -54,92 +54,121 @@ namespace SimpleGame.ViewModels
             }
         }
 
+        private bool _isPopupOpen;
+        public bool IsPopupOpen
+        {
+            get => _isPopupOpen;
+            set
+            {
+                if (Equals(_isPopupOpen, value))
+                    return;
+                _isPopupOpen = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public BoardViewModel(string host,string port)
         {
             _host = host;
             _port = port;
-            _assignedFields=new List<int>();
             IsPlayerTurn = false;
+            IsPopupOpen = false;
 
             Symbols=new ObservablePairCollection<int, ImageSource>();
-            for(int i=0;i<9;i++)
+            for(var i=0;i<9;i++)
                 Symbols.Add(i,new BitmapImage());
 
             MoveCommand = new RelayCommand<object>(PlayerTurn);
             NewGame=new RelayCommand(StartNewGame);
-            LoadCommand =new RelayCommand(Loaded);
-
-           
+            LoadCommand =new RelayCommand(Loaded);   
+            BackToSettings=new RelayCommand(OpenSettingsWindow);
         }
 
+        
         public BoardViewModel()
         {
             
         }
 
         private void Loaded()
-        {
-            _client = new SimpleTcpClient { StringEncoder = Encoding.UTF8 };
-            _client.DataReceived += Client_DataReceived;
-            _client.Connect(_host, Convert.ToInt32(_port));
-            _client.Write("Hello");
+        {          
+            try
+            {
+                _client = new SimpleTcpClient { StringEncoder = Encoding.UTF8 };
+                _client.DataReceived += Client_DataReceived;
+                _client.Connect(_host, Convert.ToInt32(_port));
+                _client.Write("Hello");
+            }
+            catch (Exception)
+            {
+                IsPopupOpen = true;
+            }
         }
 
         private void Client_DataReceived(object sender, Message e)
-        {            
+        {
             var msg = e.MessageString.Split(';');
-            if (msg.Length == 1)
+            switch (msg.Length)
             {
-                if (msg[0] == "NewGame")
-                {
+                case 1 when msg[0] == "NewGame":
                     Application.Current.Dispatcher.BeginInvoke(new Action(ReallyStartNewGame));
-                }
-                else
-                {
+                    break;
+                case 1:
                     Application.Current.Dispatcher.BeginInvoke(msg[0] == "Player1"
-                        ? AssignPlayer1
-                        : new Action(AssignPlayer2));
-                }              
-            }               
-            else 
-            {
-                if (CurrentPlayer != null && msg[0] == CurrentPlayer.PlayerType.ToString())
-                {
-                   Application.Current.Dispatcher.BeginInvoke(new Action(() => EnemyTurn(Int32.Parse(msg[1]))));
-                }
-                    
+                        ? new Action(() => AssignPlayer(Players.Player1))
+                        : () => AssignPlayer(Players.Player2));
+                    break;
+                default:
+                    if (CurrentPlayer != null && msg[0] == CurrentPlayer.PlayerType.ToString())
+                    {
+                        Application.Current.Dispatcher.BeginInvoke(new Action(() => EnemyTurn(Int32.Parse(msg[1]))));
+                    }
+
+                    break;
             }
         }
 
-        private void AssignPlayer2()
+        private void OpenSettingsWindow()
         {
-            CurrentPlayer = new SecondPlayer(Players.Player2);
-            _enemyPlayer = new FirstPlayer(Players.Player1);
+            var vm=new ViewModelLocator();
+            vm.Main.CurrentViewModel = OnlineGameSettingsViewModel.GetInstance();
         }
 
-        private void AssignPlayer1()
-        {
-            CurrentPlayer = new FirstPlayer(Players.Player1);
-            _enemyPlayer = new SecondPlayer(Players.Player2);
-            IsPlayerTurn = true;
-        }
 
-        private void EnemyTurn(int index)
+        private void AssignPlayer(Players player)
         {
-            
-            if (!Player.IsGameOver && _assignedFields.Contains(index) || Player.IsGameOver) return;          
-            _assignedFields.Add(index);
-            Symbols[index].Value = _enemyPlayer.SymbolSource;
-            _enemyPlayer.MakeTurn(index);
-
-            if (_assignedFields.Count == 9)
+            if(player == Players.Player1)
             {
-                MessageBox.Show("It's a draw!!!");
-                Player.IsGameOver = true;
-             
+                CurrentPlayer = new FirstPlayer(Players.Player1);
+                _enemyPlayer = new SecondPlayer(Players.Player2);
+                IsPlayerTurn = true;              
             }
-            IsPlayerTurn = true;
+            else
+            {
+                CurrentPlayer = new SecondPlayer(Players.Player2);
+                _enemyPlayer = new FirstPlayer(Players.Player1);
+            }
+
+            _enemyPlayer.Win += EnemyWin;
+            _currentPlayer.Win += PlayerWin;
+            Player.Draw += MatchEndedInDraw;
         }
+
+        private void MatchEndedInDraw(object sender, EventArgs e)
+        {
+            MessageBox.Show("It's a draw");
+        }
+
+        private static void PlayerWin(object sender, EventArgs e)
+        {
+            MessageBox.Show("You win");
+        }
+
+        private static void EnemyWin(object sender, EventArgs e)
+        {
+            MessageBox.Show("You lose");
+        }
+
 
         private void StartNewGame()
         {        
@@ -147,33 +176,31 @@ namespace SimpleGame.ViewModels
         }
 
         private void ReallyStartNewGame()
-        {
-            _assignedFields.Clear();
-
-            for (int i = 0; i < 9; i++)
+        {           
+            for (var i = 0; i < 9; i++)
                 Symbols[i].Value = new BitmapImage();
-
             Player.IsGameOver = false;
+            Player.FieldsTakenByBothPlayers.Clear();
             CurrentPlayer.EmptyFields();
             _enemyPlayer.EmptyFields();
             IsPlayerTurn = CurrentPlayer.PlayerType == Players.Player1;
         }
 
+        private void EnemyTurn(int index)
+        {
+            if (Player.IsGameOver || Player.FieldsTakenByBothPlayers.Contains(index)) return;
+            Symbols[index].Value = _enemyPlayer.SymbolSource;
+            _enemyPlayer.MakeTurn(index);
+            IsPlayerTurn = true;
+        }
+
         private void PlayerTurn(object p)
         {          
-            int index = Convert.ToInt32(p);
-            if(_assignedFields.Contains(index)||Player.IsGameOver) return;
-
-            _assignedFields.Add(index);
+            var index = Convert.ToInt32(p);
+            if(Player.FieldsTakenByBothPlayers.Contains(index)||Player.IsGameOver) return;
             Symbols[index].Value = CurrentPlayer.SymbolSource;
             CurrentPlayer.MakeTurn(index);
-
-            IsPlayerTurn = false;
-            if (!Player.IsGameOver&&_assignedFields.Count == 9)
-            {
-                MessageBox.Show("It's a draw!!!");
-                Player.IsGameOver = true;
-            }          
+            IsPlayerTurn = false;                 
             _client.Write(_enemyPlayer.PlayerType+";"+index);
         }
     }

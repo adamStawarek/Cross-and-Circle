@@ -73,6 +73,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="FirstPlayer.cs" />
+    <Compile Include="Helpers\InverseBoolConverter.cs" />
     <Compile Include="Helpers\ObservablePairCollection.cs" />
     <Compile Include="Helpers\Pair.cs" />
     <Compile Include="Helpers\ListExtensions.cs" />

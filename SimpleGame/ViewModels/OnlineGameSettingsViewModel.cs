@@ -10,6 +10,12 @@ namespace SimpleGame.ViewModels
 {
     class OnlineGameSettingsViewModel:ViewModelBase
     {
+        private static OnlineGameSettingsViewModel _instance;
+        public static OnlineGameSettingsViewModel GetInstance()
+        {
+            return _instance ?? (_instance = new OnlineGameSettingsViewModel());
+        }
+
         private string _port;
         public string Port
         {

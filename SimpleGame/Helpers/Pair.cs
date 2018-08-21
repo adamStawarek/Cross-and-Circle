@@ -11,33 +11,24 @@ namespace SimpleGame.Helpers
 
         public TKey Key
         {
-            get { return _key; }
+            get => _key;
             set
             {
-                if (
-                    (_key == null && value != null)
-                    || (_key != null && value == null)
-                    || !_key.Equals(value))
-                {
-                    _key = value;
-                    NotifyPropertyChanged("Key");
-                }
+                if ((_key != null || value == null) && (_key == null || value != null) && _key.Equals(value)) return;
+                _key = value;
+                NotifyPropertyChanged("Key");
             }
         }
 
         public TValue Value
         {
-            get { return _value; }
+            get => _value;
             set
             {
-                if (
-                    (_value == null && value != null)
-                    || (_value != null && value == null)
-                    || (_value != null && !_value.Equals(value)))
-                {
-                    _value = value;
-                    NotifyPropertyChanged("Value");
-                }
+                if ((_value != null || value == null) && (_value == null || value != null) &&
+                    (_value == null || _value.Equals(value))) return;
+                _value = value;
+                NotifyPropertyChanged("Value");
             }
         }
 
@@ -59,10 +50,7 @@ namespace SimpleGame.Helpers
 
         protected void NotifyPropertyChanged(string propertyName)
         {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

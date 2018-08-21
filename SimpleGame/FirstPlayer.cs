@@ -7,7 +7,7 @@ namespace SimpleGame
     {
         public FirstPlayer(Players playerType) : base(playerType)
         {
-            SymbolSource=new BitmapImage(new Uri(@"C:\Users\Administrator\source\repos\SimpleGame\SimpleGame\Images\Circle.png"));
+            SymbolSource=new BitmapImage(new Uri(@"\Images\Circle.png",UriKind.Relative));
         }
     }
 }
