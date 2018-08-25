@@ -8,6 +8,7 @@ namespace SimpleGame
         public SecondPlayer(Players playerType) : base(playerType)
         {
             SymbolSource = new BitmapImage(new Uri(@"\Images\Cross.png",UriKind.Relative));
+            WinSymbolSource = new BitmapImage(new Uri(@"\Images\CrossWin.png", UriKind.Relative));
         }
     }
 }

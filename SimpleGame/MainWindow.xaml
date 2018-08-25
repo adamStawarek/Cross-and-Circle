@@ -1,9 +1,8 @@
 ﻿<Window x:Class="SimpleGame.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SimpleGame"
         xmlns:viewModels="clr-namespace:SimpleGame.ViewModels"
         xmlns:views="clr-namespace:SimpleGame.Views"
         mc:Ignorable="d"
@@ -15,8 +14,11 @@
             <DataTemplate DataType="{x:Type viewModels:BoardViewModel}">
                 <views:BoardView DataContext="{Binding}"></views:BoardView>
             </DataTemplate>
-            <DataTemplate DataType="{x:Type viewModels:OnlineGameSettingsViewModel}">
-                <views:OnlineGameSettings DataContext="{Binding}"></views:OnlineGameSettings>
+            <DataTemplate DataType="{x:Type viewModels:GameSettingsViewModel}">
+                <views:GameSettingsView DataContext="{Binding}"></views:GameSettingsView>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type viewModels:ModalBoxViewModel}">
+                <views:ModalBoxView DataContext="{Binding}"></views:ModalBoxView>
             </DataTemplate>
         </Grid.Resources>
         <ContentControl Content="{Binding CurrentViewModel,UpdateSourceTrigger=PropertyChanged}"></ContentControl>

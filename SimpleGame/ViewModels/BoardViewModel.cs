@@ -3,6 +3,7 @@ using GalaSoft.MvvmLight.Command;
 using SimpleGame.Helpers;
 using SimpleTCP;
 using System;
+using System.Diagnostics;
 using System.Text;
 using System.Windows;
 using System.Windows.Media;
@@ -22,8 +23,7 @@ namespace SimpleGame.ViewModels
         public RelayCommand<object> MoveCommand { get; }
         public RelayCommand NewGame { get; }
         public RelayCommand LoadCommand { get; }
-        public RelayCommand BackToSettings { get; set; }
-
+      
         private Player _enemyPlayer;
         private Player _currentPlayer;
         public Player CurrentPlayer
@@ -55,73 +55,74 @@ namespace SimpleGame.ViewModels
             }
         }
 
-        private bool _isPopupOpen;
-        public bool IsPopupOpen
+        private bool _isAnimatedWaitingImage;
+        public bool IsAnimatedWaitingImage
         {
-            get => _isPopupOpen;
+            get => _isAnimatedWaitingImage;
             set
             {
-                if (Equals(_isPopupOpen, value))
+                if (Equals(_isAnimatedWaitingImage, value))
                     return;
-                _isPopupOpen = value;                
-                RaisePropertyChanged();
-            }
-        }
-        
-        private bool _isWaitingPopupOpen;
-        public bool IsWaitingPopupOpen
-        {
-            get => _isWaitingPopupOpen;
-            set
-            {
-                if (Equals(_isWaitingPopupOpen, value))
-                    return;
-                _isWaitingPopupOpen = value;
+                _isAnimatedWaitingImage = value;
                 RaisePropertyChanged();
             }
         }
 
-
-        private string _warningPopupMessage;
-        public string WarningPopupMessage
+        private string _waitingBoxMessage;
+        public string WaitingBoxMessage
         {
-            get => _warningPopupMessage;
+            get => _waitingBoxMessage;
             set
             {
-                if (Equals(_warningPopupMessage, value))
+                if (Equals(_waitingBoxMessage, value))
                     return;
-                _warningPopupMessage = value;
+                _waitingBoxMessage = value;
                 RaisePropertyChanged();
             }
         }
 
+        private ImageSource _waitingBoxImage;
+        public ImageSource WaitingBoxImage
+        {
+            get => _waitingBoxImage;
+            set
+            {
+                if (Equals(_waitingBoxImage, value))
+                {
+                    return;
+                }
+                _waitingBoxImage = value;
+                RaisePropertyChanged();
+            }
+        }     
+    
         public BoardViewModel(string host,string port)
         {
             _host = host;
             _port = port;
-            IsPlayerTurn = false;
-            IsPopupOpen = false;
-            IsWaitingPopupOpen = false;
 
-            Symbols=new ObservablePairCollection<int, ImageSource>();
+            Symbols =new ObservablePairCollection<int, ImageSource>();
             for(var i=0;i<9;i++)
                 Symbols.Add(i,new BitmapImage());
 
             MoveCommand = new RelayCommand<object>(PlayerTurn);
             NewGame=new RelayCommand(InformServerToStartNewGame);
             LoadCommand =new RelayCommand(Loaded);   
-            BackToSettings=new RelayCommand(OpenSettingsWindow);
+          
             Application.Current.Exit += DisconnectClient;
         }
 
         private void DisconnectClient(object sender, ExitEventArgs e)
         {
-            _client.Disconnect();
-        }
-
-        public BoardViewModel()
-        {
-            
+            try
+            {
+                _client.Write("Client_disconnected");
+                _client.Disconnect();
+            }
+            catch (Exception ex)
+            {
+                Trace.Write(ex.Message);
+            }         
         }
 
         private void Loaded()
@@ -135,8 +136,10 @@ namespace SimpleGame.ViewModels
             }
             catch (Exception)
             {
-                WarningPopupMessage = "Cannot connect to given host and port!!!";
-                IsPopupOpen = true;
+                //WarningPopupMessage = "Cannot connect to given host and port!!!";
+                //IsPopupOpen = true;
+                ViewModelLocator vm = new ViewModelLocator();
+                vm.Main.CurrentViewModel = new ModalBoxViewModel("Cannot connect to given host and port!!!");
             }
         }
 
@@ -154,6 +157,9 @@ namespace SimpleGame.ViewModels
                 case 1 when msg[0] == "Client_disconnected":
                     Application.Current.Dispatcher.BeginInvoke(new Action(ClientDisconnected));
                     break;
+                case 1 when msg[0] == "Server_disconnected":
+                    Application.Current.Dispatcher.BeginInvoke(new Action(ServerDisconnected));
+                    break;
                 case 1:
                     Application.Current.Dispatcher.BeginInvoke(msg[0] == "Player1"
                         ? new Action(() => AssignPlayer(Players.Player1))
@@ -169,39 +175,50 @@ namespace SimpleGame.ViewModels
             }
         }
 
+        private void ServerDisconnected()
+        {
+            ViewModelLocator vm = new ViewModelLocator();
+            vm.Main.CurrentViewModel = new ModalBoxViewModel("Server not running");
+        }
+
         private void ClientDisconnected()
         {
-            WarningPopupMessage = "The second player has left the game";
-            IsPopupOpen = true;
+            //WarningPopupMessage = "The second player has left the game";
+            //IsPopupOpen = true;
+            ViewModelLocator vm = new ViewModelLocator();
+            vm.Main.CurrentViewModel = new ModalBoxViewModel("Client disconnected");
         }
 
         private void ReadyToPlay()
-        {            
+        {
+            IsAnimatedWaitingImage = true;
             if (CurrentPlayer.PlayerType == Players.Player1)
             {
                 IsPlayerTurn = true;
-                IsWaitingPopupOpen = false;
-            }                            
-        }
-
-        private void OpenSettingsWindow()
-        {
-            var vm=new ViewModelLocator();
-            vm.Main.CurrentViewModel = OnlineGameSettingsViewModel.GetInstance();
+                WaitingBoxMessage = "Your turn";
+                WaitingBoxImage = CurrentPlayer.SymbolSource;
+            }
+            else
+            {
+                IsPlayerTurn = false;
+                WaitingBoxMessage = "Second player thinking...";
+                WaitingBoxImage = _enemyPlayer.SymbolSource;
+            }                    
         }
 
         private void AssignPlayer(Players player)
-        {
-            if(player == Players.Player1)
+        {        
+            if (player == Players.Player1)
             {
                 CurrentPlayer = new FirstPlayer(Players.Player1);
                 _enemyPlayer = new SecondPlayer(Players.Player2);
-                IsWaitingPopupOpen = true;
+                WaitingBoxMessage = "Waiting for second player to join...";              
             }
             else
             {
                 CurrentPlayer = new SecondPlayer(Players.Player2);
                 _enemyPlayer = new FirstPlayer(Players.Player1);
+                IsAnimatedWaitingImage = true;
             }
 
             _enemyPlayer.Win += EnemyWin;
@@ -210,17 +227,29 @@ namespace SimpleGame.ViewModels
         }
 
         private void MatchEndedInDraw(object sender, EventArgs e)
-        {
+        {          
+            IsPlayerTurn = false;
+            WaitingBoxMessage = "There is no winner";
+            WaitingBoxImage = Player.DrawSymbolSource;
+            IsAnimatedWaitingImage = false;
             MessageBox.Show("It's a draw");
         }
 
-        private static void PlayerWin(object sender, EventArgs e)
+        private void PlayerWin(object sender, EventArgs e)
         {
+            WaitingBoxMessage = CurrentPlayer.PlayerType+" is the winner";
+            WaitingBoxImage = CurrentPlayer.WinSymbolSource;           
+            IsPlayerTurn = false;
+            IsAnimatedWaitingImage = false;
             MessageBox.Show("You win");
         }
 
-        private static void EnemyWin(object sender, EventArgs e)
+        private void EnemyWin(object sender, EventArgs e)
         {
+            WaitingBoxMessage = _enemyPlayer.PlayerType + " is the winner";
+            WaitingBoxImage = _enemyPlayer.WinSymbolSource;          
+            IsPlayerTurn = false;
+            IsAnimatedWaitingImage = false;
             MessageBox.Show("You lose");
         }
 
@@ -237,15 +266,16 @@ namespace SimpleGame.ViewModels
             Player.FieldsTakenByBothPlayers.Clear();
             CurrentPlayer.EmptyFields();
             _enemyPlayer.EmptyFields();
-            IsPlayerTurn = CurrentPlayer.PlayerType == Players.Player1;
+           ReadyToPlay();
         }
 
         private void EnemyTurn(int index)
-        {
+        {         
             if (Player.IsGameOver || Player.FieldsTakenByBothPlayers.Contains(index)) return;
             Symbols[index].Value = _enemyPlayer.SymbolSource;
             _enemyPlayer.MakeTurn(index);
-            IsPlayerTurn = true;
+           SwitchWaitingBoxPlayer();
+            
         }
 
         private void PlayerTurn(object p)
@@ -253,9 +283,26 @@ namespace SimpleGame.ViewModels
             var index = Convert.ToInt32(p);
             if(Player.FieldsTakenByBothPlayers.Contains(index)||Player.IsGameOver) return;
             Symbols[index].Value = CurrentPlayer.SymbolSource;
-            CurrentPlayer.MakeTurn(index);
-            IsPlayerTurn = false;                 
+            CurrentPlayer.MakeTurn(index);                            
             _client.Write(_enemyPlayer.PlayerType+";"+index);
+            SwitchWaitingBoxPlayer();
+        }
+
+        private void SwitchWaitingBoxPlayer()
+        {
+            if (Player.IsGameOver) return;
+            if (IsPlayerTurn)
+            {
+                IsPlayerTurn = false;
+                WaitingBoxMessage = "Second player thinking...";
+                WaitingBoxImage = _enemyPlayer.SymbolSource;
+            }
+            else
+            {
+                IsPlayerTurn = true;
+                WaitingBoxMessage = "Your turn";
+                WaitingBoxImage = CurrentPlayer.SymbolSource;
+            }
         }
     }
 }

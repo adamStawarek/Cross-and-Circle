@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace SimpleGame
 {
@@ -12,12 +13,13 @@ namespace SimpleGame
     {
         public static EventHandler Draw;
         public static bool IsGameOver;
+        public static readonly ImageSource DrawSymbolSource;
         public static ObservableCollection<int> FieldsTakenByBothPlayers;
         static Player()
         {
             IsGameOver = false;        
-
-            FieldsTakenByBothPlayers=new ObservableCollection<int>();
+            DrawSymbolSource=new BitmapImage(new Uri(@"\Images\Draw.png", UriKind.Relative));
+            FieldsTakenByBothPlayers =new ObservableCollection<int>();
             FieldsTakenByBothPlayers.CollectionChanged += CheckForDraw;
         }
 
@@ -37,6 +39,7 @@ namespace SimpleGame
 
         public Players PlayerType { get; set; }
         public ImageSource SymbolSource { get; set; }
+        public ImageSource WinSymbolSource { get; set; }
         private ObservableCollection<int> TakenFields { get; }
         public event EventHandler Win;
 

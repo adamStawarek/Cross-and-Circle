@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
 
 namespace SimpleGame.Helpers
@@ -9,7 +10,7 @@ namespace SimpleGame.Helpers
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
 
-            return parameter != null && (value != null && (!((bool) value||(bool)parameter)));
+            return value != null && (bool) value ? Visibility.Visible : Visibility.Hidden;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

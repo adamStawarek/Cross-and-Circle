@@ -84,9 +84,13 @@
     <Compile Include="Players.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="SecondPlayer.cs" />
-    <Compile Include="ViewModels\OnlineGameSettingsViewModel.cs" />
-    <Compile Include="Views\OnlineGameSettings.xaml.cs">
-      <DependentUpon>OnlineGameSettings.xaml</DependentUpon>
+    <Compile Include="ViewModels\ModalBoxViewModel.cs" />
+    <Compile Include="ViewModels\GameSettingsViewModel.cs" />
+    <Compile Include="Views\ModalBoxView.xaml.cs">
+      <DependentUpon>ModalBoxView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\GameSettingsView.xaml.cs">
+      <DependentUpon>GameSettingsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
@@ -110,7 +114,11 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="Views\OnlineGameSettings.xaml">
+    <Page Include="Views\ModalBoxView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\GameSettingsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -147,7 +155,11 @@
     <Resource Include="Images\Cross.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\waiting.gif" />
+    <Resource Include="Images\CircleWin.png" />
+    <Resource Include="Images\CrossWin.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Draw.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -6,15 +6,16 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Windows;
 
 namespace SimpleGame.ViewModels
 {
-    class OnlineGameSettingsViewModel:ViewModelBase
+    internal class GameSettingsViewModel:ViewModelBase
     {
-        private static OnlineGameSettingsViewModel _instance;
-        public static OnlineGameSettingsViewModel GetInstance()
+        private static GameSettingsViewModel _instance;
+        public static GameSettingsViewModel GetInstance()
         {
-            return _instance ?? (_instance = new OnlineGameSettingsViewModel());
+            return _instance ?? (_instance = new GameSettingsViewModel());
         }
 
         private string _port;
@@ -60,13 +61,24 @@ namespace SimpleGame.ViewModels
         public RelayCommand RunServerCommand { get; }
         private SimpleTcpServer _server;
 
-        public OnlineGameSettingsViewModel()
+        public GameSettingsViewModel()
         {
             Port = "8919";
             Host = "127.0.0.1";
             ConnectionMessage = "";
             StartGameCommand=new RelayCommand(StartGame);
-            RunServerCommand=new RelayCommand(RunServer);          
+            RunServerCommand=new RelayCommand(RunServer);
+            Application.Current.Exit += CloseServer;
+        }
+
+        private void CloseServer(object sender, ExitEventArgs e)
+        {
+            if (_server != null && _server.IsStarted)
+            {
+                _server.Broadcast("Server_disconnected");
+                 _server.Stop();
+            }
+               
         }
 
         private void RunServer()
@@ -79,7 +91,6 @@ namespace SimpleGame.ViewModels
             try
             {
                 _server.DataReceived += Server_DataReceived;
-                _server.ClientConnected += BroadcastThatAllClientsReady;
                 _server.ClientDisconnected += BroadcastThatOneClientLeftTheGame;
                 IPAddress ip = IPAddress.Parse(Host);
                 _server.Start(ip, Convert.ToInt32(Port));
@@ -97,18 +108,14 @@ namespace SimpleGame.ViewModels
             _server.Broadcast("Client_disconnected");
         }
 
-        private void BroadcastThatAllClientsReady(object sender, TcpClient e)
-        {
-            if(_server.ConnectedClientsCount==2)
-                _server.Broadcast("Ready");
-        }
-
         private void Server_DataReceived(object sender, Message e)
         {        
             switch (e.MessageString)
             {
                 case "Hello":
                     e.Reply(_server.ConnectedClientsCount == 1 ? "Player1" : "Player2");
+                    if (_server.ConnectedClientsCount == 2)
+                        _server.Broadcast("Ready");
                     break;
                 case "NewGame":
                     _server.Broadcast(e.MessageString);
